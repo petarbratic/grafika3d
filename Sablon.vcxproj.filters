@@ -36,6 +36,9 @@
     <ClCompile Include="AccordionScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RightBodyBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -43,6 +46,12 @@
       <Filter>Source Files\Shader Files</Filter>
     </None>
     <None Include="basic.vert">
+      <Filter>Source Files\Shader Files</Filter>
+    </None>
+    <None Include="phong.frag">
+      <Filter>Source Files\Shader Files</Filter>
+    </None>
+    <None Include="phong.vert">
       <Filter>Source Files\Shader Files</Filter>
     </None>
   </ItemGroup>
@@ -75,6 +84,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AccordionScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RightBodyBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

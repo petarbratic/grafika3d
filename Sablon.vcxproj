@@ -147,6 +147,7 @@
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="KeyInput.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RightBodyBox.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Util.cpp" />
   </ItemGroup>
@@ -154,6 +155,8 @@
     <None Include="basic.frag" />
     <None Include="basic.vert" />
     <None Include="packages.config" />
+    <None Include="phong.frag" />
+    <None Include="phong.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AccordionScene.h" />
@@ -163,6 +166,7 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="KeyInput.h" />
     <ClInclude Include="NoteData.h" />
+    <ClInclude Include="RightBodyBox.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Util.h" />

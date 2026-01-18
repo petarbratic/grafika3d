@@ -63,6 +63,26 @@ int main(void)
     unsigned int shader = createShader("basic.vert", "basic.frag");
     glUseProgram(shader);
 
+    unsigned int phongShader = createShader("phong.vert", "phong.frag");
+
+    int modelLocP = glGetUniformLocation(phongShader, "uM");
+    int viewLocP = glGetUniformLocation(phongShader, "uV");
+    int projLocP = glGetUniformLocation(phongShader, "uP");
+
+    int viewPosLoc = glGetUniformLocation(phongShader, "uViewPos");
+
+    int lightPosLoc = glGetUniformLocation(phongShader, "uLight.pos");
+    int lightALoc = glGetUniformLocation(phongShader, "uLight.kA");
+    int lightDLoc = glGetUniformLocation(phongShader, "uLight.kD");
+    int lightSLoc = glGetUniformLocation(phongShader, "uLight.kS");
+
+    int matShineLoc = glGetUniformLocation(phongShader, "uMaterial.shine");
+    int matALoc = glGetUniformLocation(phongShader, "uMaterial.kA");
+    int matDLoc = glGetUniformLocation(phongShader, "uMaterial.kD");
+    int matSLoc = glGetUniformLocation(phongShader, "uMaterial.kS");
+
+
+
     int modelLoc = glGetUniformLocation(shader, "uM");
     int viewLoc = glGetUniformLocation(shader, "uV");
     int projLoc = glGetUniformLocation(shader, "uP");
@@ -82,6 +102,20 @@ int main(void)
         0.1f,
         100.0f
     );
+
+
+    glUseProgram(phongShader);
+
+    glUniformMatrix4fv(viewLocP, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(projLocP, 1, GL_FALSE, glm::value_ptr(proj));
+    glUniform3f(viewPosLoc, 0.0f, 0.0f, 2.2f); // ista pozicija kao kamera
+
+    glUniform3f(lightPosLoc, 0.0f, 0.0f, 2.2f); // isto kao uViewPos
+    glUniform3f(lightALoc, 0.25f, 0.25f, 0.25f);
+    glUniform3f(lightDLoc, 0.85f, 0.85f, 0.85f);
+    glUniform3f(lightSLoc, 1.0f, 1.0f, 1.0f);
+
+    glUseProgram(0);
 
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
@@ -136,6 +170,25 @@ int main(void)
 
     double lastTime = glfwGetTime();
 
+
+    auto setMaterial = [&](float shine, glm::vec3 kA, glm::vec3 kD, glm::vec3 kS) {
+        glUniform1f(matShineLoc, shine);
+        glUniform3f(matALoc, kA.x, kA.y, kA.z);
+        glUniform3f(matDLoc, kD.x, kD.y, kD.z);
+        glUniform3f(matSLoc, kS.x, kS.y, kS.z);
+        };
+
+    glm::vec3 body_kA(0.02f);
+    glm::vec3 body_kD(0.05f);
+    glm::vec3 body_kS(0.15f);
+    float body_shine = 64.0f;
+
+    glm::vec3 btn_kA(0.10f);
+    glm::vec3 btn_kD(0.75f);
+    glm::vec3 btn_kS(0.30f);
+    float btn_shine = 96.0f;
+
+
     // ------------------------------------------------------------
     while (!glfwWindowShouldClose(window))
     {
@@ -148,9 +201,16 @@ int main(void)
         scene.updatePress(dt, ctx.pressTarget);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(shader);
 
-        scene.render(shader, modelLoc);
+        glUseProgram(phongShader);
+
+        // (ako rotiraš kameru ili menjaš viewPos, update ovde; za sad ne mora)
+
+        scene.renderPhong(phongShader, modelLocP,
+            body_kA, body_kD, body_kS, body_shine,
+            btn_kA, btn_kD, btn_kS, btn_shine);
+
+        glUseProgram(0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

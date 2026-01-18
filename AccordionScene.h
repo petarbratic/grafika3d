@@ -8,6 +8,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "RightBodyBox.h"
+
 class TextureManager;
 
 class AccordionScene
@@ -25,6 +27,10 @@ public:
     void updateRotationFromKeys(GLFWwindow* window);
 
     void render(GLuint shader, GLint modelLoc);
+
+    void renderPhong(GLuint phongShader, GLint modelLoc,
+        const glm::vec3& body_kA, const glm::vec3& body_kD, const glm::vec3& body_kS, float body_shine,
+        const glm::vec3& btn_kA, const glm::vec3& btn_kD, const glm::vec3& btn_kS, float btn_shine);
 
 private:
     const TextureManager* textures_ = nullptr;
@@ -45,8 +51,10 @@ private:
     float accRotX_ = 0.0f;
     float accRotY_ = 0.0f;
 
-    float pressDepth_ = 0.025f;
+    float pressDepth_ = 0.020f;
 
     // layout
     NoteId layout_[3][10]{};
+
+    RightBodyBoxMesh RightBody_{};
 };
