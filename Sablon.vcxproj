@@ -143,8 +143,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AccordionScene.cpp" />
     <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="KeyInput.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Util.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -153,10 +156,15 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AccordionScene.h" />
     <ClInclude Include="AppContext.h" />
     <ClInclude Include="Audio.h" />
     <ClInclude Include="ButtonCylinder.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="KeyInput.h" />
+    <ClInclude Include="NoteData.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
