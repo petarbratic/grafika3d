@@ -146,6 +146,7 @@
     <ClCompile Include="AccordionScene.cpp" />
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="KeyInput.cpp" />
+    <ClCompile Include="LeftBodyBox.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RightBodyBox.cpp" />
     <ClCompile Include="TextureManager.cpp" />
@@ -165,6 +166,7 @@
     <ClInclude Include="ButtonCylinder.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="KeyInput.h" />
+    <ClInclude Include="LeftBodyBox.h" />
     <ClInclude Include="NoteData.h" />
     <ClInclude Include="RightBodyBox.h" />
     <ClInclude Include="stb_image.h" />

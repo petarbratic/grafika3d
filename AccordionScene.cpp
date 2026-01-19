@@ -10,6 +10,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "LeftBodyBox.h"
+
 namespace
 {
     // Helper: cache uniform loc once per program
@@ -99,20 +101,6 @@ namespace
 
 } // namespace
 
-// -------------------------
-// NOTE: Ovaj fajl pretpostavlja da AccordionScene ima sledece clanove (kao u tvom kodu):
-// textures_, layout_, btn_, RightBody_, localPos_, press_, N_, baseN_, baseRows_, cols_, totalRows_,
-// accPos_, accRotX_, accRotY_, pressDepth_
-//
-// i da imas:
-//   getRightHandLayout(layout_);
-//   CreateButtonCylinder(...)
-//   CreateRightBodyBox(...)
-//   DestroyRightBodyBox(...)
-//   DestroyButtonMesh(...)
-//   clampf(...)
-// -------------------------
-
 void AccordionScene::init(const TextureManager* textures)
 {
     textures_ = textures;
@@ -180,14 +168,31 @@ void AccordionScene::init(const TextureManager* textures)
     // KORPUS: dimenzije (2*sx, 2*sy, 2*sz)
     RightBody_ = CreateRightBodyBox(0.95f, 0.55f, 0.03f);
 
-    // TUNING: da "legne" (jedno mesto)
-    // Ako hoces da ga pomeris, menjaj samo ovo.
-    // (pretpostavka: u headeru imas rightBodyOffset_; ako nemas, dodaj ga ili zameni ovde lokalnom static vrednoscu)
-    // rightBodyOffset_ = glm::vec3(0.0f, 0.0f, -0.03f);
+    // ============================================================
+    // TUNING: LEVA STRANA (menjaj samo ovde)
+    // Dekla u RightBodyBox.cpp:
+    //   dx=0.95f, dy=0.20f, dz=0.24f
+    // Leva treba ista X/Y, malo deblja po Z.
+    const float left_dx = 0.95f;
+    const float left_dy = 0.3f;
+    const float left_dz = 0.24f + 0.01f; // "malo deblja" od dekle (tuning)
+
+    // Pozicija leve strane u odnosu na accM (lokalni prostor scene)
+    // MENJAJ OVO dok ne "legne"
+    leftBodyOffset_ = glm::vec3(0.047f, 1.30f, 0.148f);
+
+    // Opciona rotacija leve strane (ako zatreba), u radijanima
+    // (0 = nema dodatne rotacije)
+    leftBodyRotY_ = 0.0f;
+    leftBodyRotX_ = 0.0f;
+    // ============================================================
+
+    LeftBody_ = CreateLeftBodyBox(left_dx, left_dy, left_dz);
 }
 
 void AccordionScene::shutdown()
 {
+    DestroyLeftBodyBox(LeftBody_);
     DestroyRightBodyBox(RightBody_);
     DestroyButtonMesh(btn_);
 }
@@ -198,6 +203,19 @@ void AccordionScene::updateRotationFromKeys(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) accRotY_ -= 0.03f;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)    accRotX_ += 0.03f;
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)  accRotX_ -= 0.03f;
+
+
+    // ------------------------------------------------------------
+    // POMERANJE CELE HARMONIKE (TUNING)
+    const float moveStep = 0.03f;
+
+    // Q/W: gore/dole po Y osi
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) accPos_.y += moveStep;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) accPos_.y -= moveStep;
+
+    // 1/2: levo/desno po X osi
+    if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) accPos_.x -= moveStep;
+    if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS) accPos_.x += moveStep;
 }
 
 void AccordionScene::updatePress(float dt, const std::vector<float>& pressTarget)
@@ -227,7 +245,6 @@ void AccordionScene::render(GLuint shader, GLint modelLoc)
     if (RightBody_.VAO != 0 && RightBody_.vertexCount > 0)
     {
         glm::mat4 bodyM = accM;
-        // TUNING: ako nemas rightBodyOffset_ kao clan, drzi ovo ovde i menjaj  --------------------------------------------------------------------------------------------------
         bodyM = bodyM * glm::translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.2f, -0.03f));
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(bodyM));
 
@@ -295,12 +312,36 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
         setPhongMaterial(up, body_shine, body_kA, body_kD, body_kS);
 
         glm::mat4 bodyM = accM;
-        // TUNING: mora biti isti offset kao u render() --------------------------------------------------------------------------------------------------
         bodyM = bodyM * glm::translate(glm::mat4(1.0f), glm::vec3(0.05f, 0.2f, -0.03f));
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(bodyM));
 
         glBindVertexArray(RightBody_.VAO);
         glDrawArrays(GL_TRIANGLES, 0, RightBody_.vertexCount);
+        glBindVertexArray(0);
+    }
+
+    // --------------------
+    // LEVA STRANA: crna kutija (privremeno)
+    if (LeftBody_.VAO != 0 && LeftBody_.vertexCount > 0)
+    {
+        // crn materijal
+        const glm::vec3 left_kA(0.02f);
+        const glm::vec3 left_kD(0.02f);
+        const glm::vec3 left_kS(0.08f);
+        const float left_shine = 64.0f;
+
+        setPhongMaterial(up, left_shine, left_kA, left_kD, left_kS);
+
+        // koristi TUNING parametre iz init()
+        glm::mat4 leftM = accM;
+        leftM = leftM * glm::translate(glm::mat4(1.0f), leftBodyOffset_);
+        if (leftBodyRotY_ != 0.0f) leftM = leftM * glm::rotate(glm::mat4(1.0f), leftBodyRotY_, glm::vec3(0, 1, 0));
+        if (leftBodyRotX_ != 0.0f) leftM = leftM * glm::rotate(glm::mat4(1.0f), leftBodyRotX_, glm::vec3(1, 0, 0));
+
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(leftM));
+
+        glBindVertexArray(LeftBody_.VAO);
+        glDrawArrays(GL_TRIANGLES, 0, LeftBody_.vertexCount);
         glBindVertexArray(0);
     }
 
@@ -322,13 +363,11 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
         glm::mat4 M = accM * local * orient * pressM;
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(M));
 
-        // note za ovo dugme (isti princip kao u render())
         int r = i / cols_;
         int c = i % cols_;
         int baseR = r % baseRows_;
         NoteId n = layout_[baseR][c];
 
-        // materijal: belo vs crno
         glm::vec3 kA(0.10f);
         glm::vec3 kD(0.85f);
         glm::vec3 kS(0.35f);
@@ -340,7 +379,6 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
             kS = glm::vec3(0.25f);
         }
 
-        // pritisnuto malo potamni (opciono)
         float pressDark = 1.0f - 0.20f * press_[i];
         kD *= pressDark;
 

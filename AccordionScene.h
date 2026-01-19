@@ -9,6 +9,7 @@
 #include <GLFW/glfw3.h>
 
 #include "RightBodyBox.h"
+#include "LeftBodyBox.h"
 
 class TextureManager;
 
@@ -57,4 +58,12 @@ private:
     NoteId layout_[3][10]{};
 
     RightBodyBoxMesh RightBody_{};
+
+    LeftBodyBoxMesh LeftBody_{};
+
+    glm::vec3 leftBodyOffset_ = glm::vec3(0.0f);
+    float leftBodyRotY_ = 0.0f;
+    float leftBodyRotX_ = 0.0f;
+
+
 };
