@@ -209,13 +209,13 @@ void AccordionScene::updateRotationFromKeys(GLFWwindow* window)
     // POMERANJE CELE HARMONIKE (TUNING)
     const float moveStep = 0.03f;
 
-    //// Q/W: gore/dole po Y osi
-    //if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) accPos_.y += moveStep;
-    //if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) accPos_.y -= moveStep;
+    // Q/W: gore/dole po Y osi
+    if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) accPos_.y += moveStep;
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) accPos_.y -= moveStep;
 
-    //// 1/2: levo/desno po X osi
-    //if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) accPos_.x -= moveStep;
-    //if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS) accPos_.x += moveStep;
+    // 1/2: levo/desno po X osi
+    if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) accPos_.x -= moveStep;
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) accPos_.x += moveStep;
 }
 
 void AccordionScene::updatePress(float dt, const std::vector<float>& pressTarget)
