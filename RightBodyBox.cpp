@@ -105,8 +105,8 @@ RightBodyBoxMesh CreateRightBodyBox(float sx, float sy, float sz)
     // --- KOSINA (chamfer) na "top-front-right" cosku dekle ---
     // Sece ugao blizu (x1,y1,z1) u X i Z smeru, kroz celu visinu (od y0 do y1).
     // Ako stavis 0 -> nema kosine.
-    float chX = 0.10f; // koliko se odsece po X (0..dx)
-    float chZ = 0.08f; // koliko se odsece po Z (0..dz)
+    float chX = 0.0f; // koliko se odsece po X (0..dx)
+    float chZ = 0.0f; // koliko se odsece po Z (0..dz)
 
     // ============================================================
 

@@ -70,10 +70,37 @@ namespace
         if (u.kD != -1) glUniform3f(u.kD, kD.x, kD.y, kD.z);
         if (u.kS != -1) glUniform3f(u.kS, kS.x, kS.y, kS.z);
     }
+
+    // Crne note: sve sa # + Bb (flat) iz tvog enum-a
+    static inline bool isBlackNote(NoteId n)
+    {
+        switch (n)
+        {
+        case FSHARP0:
+        case GSHARP0:
+        case BFLAT0:
+
+        case CSHARP:
+        case DSHARP:
+        case FSHARP:
+        case GSHARP:
+        case BB:
+
+        case CSHARP2:
+        case DSHARP2:
+        case FSHARP2:
+        case GSHARP2:
+            return true;
+
+        default:
+            return false;
+        }
+    }
+
 } // namespace
 
 // -------------------------
-// NOTE: Ovaj fajl pretpostavlja da AccordionScene ima sledeće clanove (kao u tvom kodu):
+// NOTE: Ovaj fajl pretpostavlja da AccordionScene ima sledece clanove (kao u tvom kodu):
 // textures_, layout_, btn_, RightBody_, localPos_, press_, N_, baseN_, baseRows_, cols_, totalRows_,
 // accPos_, accRotX_, accRotY_, pressDepth_
 //
@@ -278,9 +305,7 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
     }
 
     // --------------------
-    // DUGMAD: materijal (bez teksture u Phong-u u ovoj verziji)
-    setPhongMaterial(up, btn_shine, btn_kA, btn_kD, btn_kS);
-
+    // DUGMAD: materijal po noti (crno/belo)
     glBindVertexArray(btn_.VAO);
 
     for (int i = 0; i < N_; i++)
@@ -296,6 +321,30 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
 
         glm::mat4 M = accM * local * orient * pressM;
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(M));
+
+        // note za ovo dugme (isti princip kao u render())
+        int r = i / cols_;
+        int c = i % cols_;
+        int baseR = r % baseRows_;
+        NoteId n = layout_[baseR][c];
+
+        // materijal: belo vs crno
+        glm::vec3 kA(0.10f);
+        glm::vec3 kD(0.85f);
+        glm::vec3 kS(0.35f);
+
+        if (isBlackNote(n))
+        {
+            kA = glm::vec3(0.25f);
+            kD = glm::vec3(0.25f);
+            kS = glm::vec3(0.25f);
+        }
+
+        // pritisnuto malo potamni (opciono)
+        float pressDark = 1.0f - 0.20f * press_[i];
+        kD *= pressDark;
+
+        setPhongMaterial(up, btn_shine, kA, kD, kS);
 
         glDrawArrays(GL_TRIANGLES, 0, btn_.vertexCount);
     }
