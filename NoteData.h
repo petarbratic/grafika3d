@@ -77,3 +77,64 @@ static inline std::vector<const char*> buildButtonFilesFromLayout()
     }
     return files;
 }
+
+// ===========================
+// BASS (leva ruka) - 8 * 3
+// redosled: f b c g d a e h
+// ===========================
+
+enum BassId
+{
+    BAS_F, BAS_B, BAS_C, BAS_G, BAS_D, BAS_A, BAS_E, BAS_H,          // osnovni
+    BAS_F_DUR, BAS_B_DUR, BAS_C_DUR, BAS_G_DUR, BAS_D_DUR, BAS_A_DUR, BAS_E_DUR, BAS_H_DUR, // dur
+    BAS_F_MOL, BAS_B_MOL, BAS_C_MOL, BAS_G_MOL, BAS_D_MOL, BAS_A_MOL, BAS_E_MOL, BAS_H_MOL, // mol
+    BASS_COUNT
+};
+
+static inline void getBassWavs(const char* outWav[BASS_COUNT])
+{
+    // isti folder kao i ostali semplovi (kao što si rekao)
+    const char* bassWav[BASS_COUNT] = {
+        // osnovni
+        "semplHarmonika/basF.wav",
+        "semplHarmonika/basB.wav",
+        "semplHarmonika/basC.wav",
+        "semplHarmonika/basG.wav",
+        "semplHarmonika/basD.wav",
+        "semplHarmonika/basA.wav",
+        "semplHarmonika/basE.wav",
+        "semplHarmonika/basH.wav",
+
+        // dur
+        "semplHarmonika/basFdur.wav",
+        "semplHarmonika/basBdur.wav",
+        "semplHarmonika/basCdur.wav",
+        "semplHarmonika/basGdur.wav",
+        "semplHarmonika/basDdur.wav",
+        "semplHarmonika/basAdur.wav",
+        "semplHarmonika/basEdur.wav",
+        "semplHarmonika/basHdur.wav",
+
+        // mol
+        "semplHarmonika/basFmol.wav",
+        "semplHarmonika/basBmol.wav",
+        "semplHarmonika/basCmol.wav",
+        "semplHarmonika/basGmol.wav",
+        "semplHarmonika/basDmol.wav",
+        "semplHarmonika/basAmol.wav",
+        "semplHarmonika/basEmol.wav",
+        "semplHarmonika/basHmol.wav",
+    };
+
+    for (int i = 0; i < BASS_COUNT; i++) outWav[i] = bassWav[i];
+}
+
+static inline std::vector<const char*> buildBassFiles()
+{
+    const char* wavs[BASS_COUNT];
+    getBassWavs(wavs);
+
+    std::vector<const char*> files(BASS_COUNT, nullptr);
+    for (int i = 0; i < BASS_COUNT; i++) files[i] = wavs[i];
+    return files;
+}

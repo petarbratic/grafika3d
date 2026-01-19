@@ -141,10 +141,65 @@ int main(void)
     };
 
     static int keyMap2[3][10] = {
-        { GLFW_KEY_A, GLFW_KEY_X, GLFW_KEY_V, GLFW_KEY_H, GLFW_KEY_K, GLFW_KEY_PERIOD, GLFW_KEY_9, GLFW_KEY_I, GLFW_KEY_O, GLFW_KEY_P },
-        { GLFW_KEY_Z, GLFW_KEY_D, GLFW_KEY_G, GLFW_KEY_N, GLFW_KEY_COMMA, GLFW_KEY_SEMICOLON, GLFW_KEY_9, GLFW_KEY_SLASH, GLFW_KEY_9, GLFW_KEY_9 },
-        { GLFW_KEY_TAB, GLFW_KEY_S, GLFW_KEY_C, GLFW_KEY_B, GLFW_KEY_M, GLFW_KEY_L, GLFW_KEY_9, GLFW_KEY_9, GLFW_KEY_9, GLFW_KEY_PERIOD }
+        { GLFW_KEY_A, GLFW_KEY_X, GLFW_KEY_V, GLFW_KEY_H, GLFW_KEY_K, GLFW_KEY_PERIOD, GLFW_KEY_BACKSPACE, GLFW_KEY_BACKSPACE, GLFW_KEY_BACKSPACE, GLFW_KEY_BACKSPACE },
+        { GLFW_KEY_Z, GLFW_KEY_D, GLFW_KEY_G, GLFW_KEY_N, GLFW_KEY_COMMA, GLFW_KEY_SEMICOLON, GLFW_KEY_BACKSPACE, GLFW_KEY_SLASH, GLFW_KEY_BACKSPACE, GLFW_KEY_BACKSPACE },
+        { GLFW_KEY_TAB, GLFW_KEY_S, GLFW_KEY_C, GLFW_KEY_B, GLFW_KEY_M, GLFW_KEY_L, GLFW_KEY_BACKSPACE, GLFW_KEY_BACKSPACE, GLFW_KEY_BACKSPACE, GLFW_KEY_PERIOD }
     };
+
+
+    // redosled bass kolona: f b c g d a e h
+
+    // DUGMETARSKI: osnovni + dur (mol ignorisan)
+    ctx.bassKeyBtn_basic[0] = GLFW_KEY_8; // F
+    ctx.bassKeyBtn_basic[1] = GLFW_KEY_9; // B
+    ctx.bassKeyBtn_basic[2] = GLFW_KEY_7; // C  
+    ctx.bassKeyBtn_basic[3] = GLFW_KEY_6; // G 
+    ctx.bassKeyBtn_basic[4] = GLFW_KEY_5; // D 
+    ctx.bassKeyBtn_basic[5] = GLFW_KEY_4; // A 
+    ctx.bassKeyBtn_basic[6] = GLFW_KEY_3; // E 
+    ctx.bassKeyBtn_basic[7] = GLFW_KEY_2; // H 
+    ctx.bassKeyBtn_dur[0] = GLFW_KEY_F8; // Fdur
+    ctx.bassKeyBtn_dur[1] = GLFW_KEY_F9; // Bdur
+    ctx.bassKeyBtn_dur[2] = GLFW_KEY_F7; // Cdur 
+    ctx.bassKeyBtn_dur[3] = GLFW_KEY_F6; // Gdur 
+    ctx.bassKeyBtn_dur[4] = GLFW_KEY_F5; // Ddur 
+    ctx.bassKeyBtn_dur[5] = GLFW_KEY_F4;  // Adur 
+    ctx.bassKeyBtn_dur[6] = GLFW_KEY_F3;  // Edur 
+    ctx.bassKeyBtn_dur[7] = GLFW_KEY_F2;  // Hdur 
+
+
+    // KLAVIRNI: osnovni + dur + mol
+
+    ctx.bassKeyPiano_basic[0] = GLFW_KEY_I; // F osnovni
+    ctx.bassKeyPiano_basic[1] = GLFW_KEY_O; // B osnovni
+    // dopuni ostatak redom: C,G,D,A,E,H
+    ctx.bassKeyPiano_basic[2] = GLFW_KEY_U; // C 
+    ctx.bassKeyPiano_basic[3] = GLFW_KEY_Y; // G 
+    ctx.bassKeyPiano_basic[4] = GLFW_KEY_T;// D 
+    ctx.bassKeyPiano_basic[5] = GLFW_KEY_R;// A 
+    ctx.bassKeyPiano_basic[6] = GLFW_KEY_E;// E 
+    ctx.bassKeyPiano_basic[7] = GLFW_KEY_W;// H 
+
+    // dur: brojevi
+    ctx.bassKeyPiano_dur[0] = GLFW_KEY_8; // Fdur
+    ctx.bassKeyPiano_dur[1] = GLFW_KEY_9; // Bdur
+    ctx.bassKeyPiano_dur[2] = GLFW_KEY_7;     // Cdur (PROMENI)
+    ctx.bassKeyPiano_dur[3] = GLFW_KEY_6; // Gdur (PROMENI)
+    ctx.bassKeyPiano_dur[4] = GLFW_KEY_5; // Ddur (PROMENI)
+    ctx.bassKeyPiano_dur[5] = GLFW_KEY_4;     // Adur (PROMENI)
+    ctx.bassKeyPiano_dur[6] = GLFW_KEY_3;     // Edur (PROMENI)
+    ctx.bassKeyPiano_dur[7] = GLFW_KEY_2;     // Hdur (PROMENI)
+
+    // mol: funkcijski
+    ctx.bassKeyPiano_mol[0] = GLFW_KEY_F8; // Fmol
+    ctx.bassKeyPiano_mol[1] = GLFW_KEY_F9; // Bmol
+    ctx.bassKeyPiano_mol[2] = GLFW_KEY_F7; // Cmol (PROMENI)
+    ctx.bassKeyPiano_mol[3] = GLFW_KEY_F6; // Gmol (PROMENI)
+    ctx.bassKeyPiano_mol[4] = GLFW_KEY_F5; // Dmol (PROMENI)
+    ctx.bassKeyPiano_mol[5] = GLFW_KEY_F4;  // Amol (PROMENI)
+    ctx.bassKeyPiano_mol[6] = GLFW_KEY_F3;  // Emol (PROMENI)
+    ctx.bassKeyPiano_mol[7] = GLFW_KEY_F2;  // Hmol (PROMENI)
+
 
     ctx.baseRows = scene.baseRows();
     ctx.cols = scene.cols();
@@ -155,6 +210,8 @@ int main(void)
 
     // button files (0..29) iz layout + wav
     ctx.buttonFiles = buildButtonFilesFromLayout();
+
+    ctx.bassFiles = buildBassFiles();
 
     // pressTarget za svih 60 dugmadi (3x10 + klon 3x10)
     ctx.pressTarget.assign(scene.totalButtons(), 0.0f);
