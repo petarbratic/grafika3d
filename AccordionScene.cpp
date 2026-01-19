@@ -108,7 +108,8 @@ void AccordionScene::init(const TextureManager* textures)
     // layout 1:1
     getRightHandLayout(layout_);
 
-    // dugme mesh
+    // ============================================================
+    // TREBLE dugme mesh
     btn_ = CreateButtonCylinder(
         0.06f,
         0.1f,
@@ -116,13 +117,34 @@ void AccordionScene::init(const TextureManager* textures)
         { 0.9f, 0.9f, 0.9f, 1.0f }
     );
 
-    N_ = totalRows_ * cols_;
-    baseN_ = baseRows_ * cols_;
+    // ============================================================
+    // BAS dugme mesh (uzi i beli)
+    bassBtn_ = CreateButtonCylinder(
+        0.040f, // uze od treble
+        0.085f, // malo nize
+        32,
+        { 1.0f, 1.0f, 1.0f, 1.0f }
+    );
 
-    localPos_.assign(N_, glm::vec3(0));
-    press_.assign(N_, 0.0f);
+    // ============================================================
+    // Treble counts
+    N_ = totalRows_ * cols_;   // 60
+    baseN_ = baseRows_ * cols_;// 30
 
-    // pozicije dugmadi 1:1
+    // Bas counts
+    bassN_ = bassRows_ * bassCols_;     // 24
+    bassStartIndex_ = N_;               // bass ide posle 60 u pressTarget
+    N_ = N_ + bassN_;                   // ukupno 84 (treble 60 + bas 24)
+
+    // storage
+    localPos_.assign(totalRows_ * cols_, glm::vec3(0)); // samo treble 60
+    press_.assign(totalRows_ * cols_, 0.0f);            // samo treble 60
+
+    bassLocalPos_.assign(bassN_, glm::vec3(0));
+    bassPress_.assign(bassN_, 0.0f);
+
+    // ============================================================
+    // pozicije treble dugmadi 1:1
     float dx = 0.16f;
     float dy = 0.14f;
 
@@ -165,29 +187,55 @@ void AccordionScene::init(const TextureManager* textures)
         }
     }
 
-    // KORPUS: dimenzije (2*sx, 2*sy, 2*sz)
+    // ============================================================
+    // KORPUS (desno)
     RightBody_ = CreateRightBodyBox(0.95f, 0.55f, 0.03f);
 
     // ============================================================
-    // TUNING: LEVA STRANA (menjaj samo ovde)
-    // Dekla u RightBodyBox.cpp:
-    //   dx=0.95f, dy=0.20f, dz=0.24f
-    // Leva treba ista X/Y, malo deblja po Z.
+    // LEVA KUTIJA (tvoje postojece)
     const float left_dx = 0.95f;
     const float left_dy = 0.3f;
-    const float left_dz = 0.24f + 0.01f; // "malo deblja" od dekle (tuning)
+    const float left_dz = 0.24f + 0.01f;
 
-    // Pozicija leve strane u odnosu na accM (lokalni prostor scene)
-    // MENJAJ OVO dok ne "legne"
     leftBodyOffset_ = glm::vec3(0.047f, 1.30f, 0.148f);
-
-    // Opciona rotacija leve strane (ako zatreba), u radijanima
-    // (0 = nema dodatne rotacije)
     leftBodyRotY_ = 0.0f;
     leftBodyRotX_ = 0.0f;
-    // ============================================================
 
     LeftBody_ = CreateLeftBodyBox(left_dx, left_dy, left_dz);
+
+    // ============================================================
+    // TUNING: BASOVI (menjaj samo ovde)
+    //
+    // Raspored 3 reda (osnovni/dur/mol) × 8 kolona (F B C G D A E H).
+    // Ovo je samo geometrija, audio/mapiranje dodajemo posle.
+    //
+    // bassOffset_ je GLAVNI "pomeri sve basove" parametar.
+    // Preporuka: kreni od ovoga i samo ga doteruj dok ne legne.
+    bassOffset_ = glm::vec3(0.12f, 1.18f, 0.4f);
+
+    // Opciona dodatna rotacija bas grupe (ako zatreba)
+    bassRotY_ = 0.0f;
+    bassRotX_ = 0.0f;
+
+    // razmaci basova (tuning)
+    const float bdx = 0.11f; // razmak kolona
+    const float bdy = 0.12f; // razmak redova
+
+    // start u okviru bas grupe (tuning)
+    const float bStartX = -0.5f * (bassCols_ - 1) * bdx;
+    const float bStartY = 0.5f * (bassRows_ - 1) * bdy;
+
+    // generisi 24 pozicije (3x8)
+    for (int r = 0; r < bassRows_; r++) {
+        for (int c = 0; c < bassCols_; c++) {
+            int i = r * bassCols_ + c;
+            bassLocalPos_[i] = glm::vec3(
+                bStartX + c * bdx,
+                bStartY - r * bdy,
+                0.0f
+            );
+        }
+    }
 }
 
 void AccordionScene::shutdown()
@@ -195,6 +243,7 @@ void AccordionScene::shutdown()
     DestroyLeftBodyBox(LeftBody_);
     DestroyRightBodyBox(RightBody_);
     DestroyButtonMesh(btn_);
+    DestroyButtonMesh(bassBtn_);
 }
 
 void AccordionScene::updateRotationFromKeys(GLFWwindow* window)
@@ -203,7 +252,6 @@ void AccordionScene::updateRotationFromKeys(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) accRotY_ -= 0.03f;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)    accRotX_ += 0.03f;
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)  accRotX_ -= 0.03f;
-
 
     // ------------------------------------------------------------
     // POMERANJE CELE HARMONIKE (TUNING)
@@ -223,25 +271,33 @@ void AccordionScene::updatePress(float dt, const std::vector<float>& pressTarget
     float pressInSpeed = 10.0f;
     float pressOutSpeed = 14.0f;
 
-    for (int i = 0; i < N_; i++) {
-        float target = pressTarget[i];
+    // treble (60)
+    const int trebleCount = totalRows_ * cols_;
+    for (int i = 0; i < trebleCount; i++) {
+        float target = (i < (int)pressTarget.size()) ? pressTarget[i] : 0.0f;
         float speed = (target > press_[i]) ? pressInSpeed : pressOutSpeed;
         press_[i] = press_[i] + (target - press_[i]) * (1.0f - std::exp(-speed * dt));
         press_[i] = clampf(press_[i], 0.0f, 1.0f);
+    }
+
+    // bass (24) -> pressTarget indeks: bassStartIndex_ + i
+    for (int i = 0; i < bassN_; i++) {
+        int idx = bassStartIndex_ + i;
+        float target = (idx >= 0 && idx < (int)pressTarget.size()) ? pressTarget[idx] : 0.0f;
+        float speed = (target > bassPress_[i]) ? pressInSpeed : pressOutSpeed;
+        bassPress_[i] = bassPress_[i] + (target - bassPress_[i]) * (1.0f - std::exp(-speed * dt));
+        bassPress_[i] = clampf(bassPress_[i], 0.0f, 1.0f);
     }
 }
 
 void AccordionScene::render(GLuint shader, GLint modelLoc)
 {
-    // cache uniforms for this shader
     static UniformCacheBasic ub;
     ensureBasicCache(ub, shader);
 
-    // zajednicka matrica scene (harmonika)
     const glm::mat4 accM = buildAccM(accPos_, accRotY_, accRotX_);
 
-    // --------------------
-    // KORPUS: "lazni" - samo depth (ne boji)
+    // KORPUS: depth-only
     if (RightBody_.VAO != 0 && RightBody_.vertexCount > 0)
     {
         glm::mat4 bodyM = accM;
@@ -258,11 +314,11 @@ void AccordionScene::render(GLuint shader, GLint modelLoc)
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     }
 
-    // --------------------
-    // DUGMAD: teksture
+    // TREBLE: teksture
     glBindVertexArray(btn_.VAO);
 
-    for (int i = 0; i < N_; i++)
+    const int trebleCount = totalRows_ * cols_;
+    for (int i = 0; i < trebleCount; i++)
     {
         glm::mat4 local(1.0f);
         local = glm::translate(local, localPos_[i]);
@@ -298,15 +354,12 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
 {
     glUseProgram(phongShader);
 
-    // cache uniforms for this shader
     static UniformCachePhong up;
     ensurePhongCache(up, phongShader);
 
-    // zajednicka matrica
     const glm::mat4 accM = buildAccM(accPos_, accRotY_, accRotX_);
 
-    // --------------------
-    // KORPUS: sada vidljiv, sa materijalom
+    // DESNI KORPUS
     if (RightBody_.VAO != 0 && RightBody_.vertexCount > 0)
     {
         setPhongMaterial(up, body_shine, body_kA, body_kD, body_kS);
@@ -320,11 +373,9 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
         glBindVertexArray(0);
     }
 
-    // --------------------
-    // LEVA STRANA: crna kutija (privremeno)
+    // LEVA KUTIJA
     if (LeftBody_.VAO != 0 && LeftBody_.vertexCount > 0)
     {
-        // crn materijal
         const glm::vec3 left_kA(0.02f);
         const glm::vec3 left_kD(0.02f);
         const glm::vec3 left_kS(0.08f);
@@ -332,7 +383,6 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
 
         setPhongMaterial(up, left_shine, left_kA, left_kD, left_kS);
 
-        // koristi TUNING parametre iz init()
         glm::mat4 leftM = accM;
         leftM = leftM * glm::translate(glm::mat4(1.0f), leftBodyOffset_);
         if (leftBodyRotY_ != 0.0f) leftM = leftM * glm::rotate(glm::mat4(1.0f), leftBodyRotY_, glm::vec3(0, 1, 0));
@@ -345,11 +395,56 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
         glBindVertexArray(0);
     }
 
-    // --------------------
-    // DUGMAD: materijal po noti (crno/belo)
+    // ============================================================
+    // BAS DUGMAD (24): beli, uzi cilindri, 3 reda x 8
+    if (bassBtn_.VAO != 0 && bassBtn_.vertexCount > 0)
+    {
+        // beli materijal
+        glm::vec3 b_kA(0.10f);
+        glm::vec3 b_kD(0.90f);
+        glm::vec3 b_kS(0.25f);
+        float b_shine = 96.0f;
+
+        glBindVertexArray(bassBtn_.VAO);
+
+        for (int i = 0; i < bassN_; i++)
+        {
+            // press malo potamni i udubi
+            float pressDark = 1.0f - 0.25f * bassPress_[i];
+            glm::vec3 kD = b_kD * pressDark;
+
+            setPhongMaterial(up, b_shine, b_kA, kD, b_kS);
+
+            glm::mat4 local(1.0f);
+            local = glm::translate(local, bassLocalPos_[i]);
+
+            glm::mat4 orient(1.0f);
+            orient = glm::rotate(orient, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+
+            glm::mat4 pressM(1.0f);
+            pressM = glm::translate(pressM, glm::vec3(0, pressDepth_ * bassPress_[i], 0));
+
+            // grupni transform basova (TUNING)
+            glm::mat4 bassGroup = accM;
+            bassGroup = bassGroup * glm::translate(glm::mat4(1.0f), bassOffset_);
+            if (bassRotY_ != 0.0f) bassGroup = bassGroup * glm::rotate(glm::mat4(1.0f), bassRotY_, glm::vec3(0, 1, 0));
+            if (bassRotX_ != 0.0f) bassGroup = bassGroup * glm::rotate(glm::mat4(1.0f), bassRotX_, glm::vec3(1, 0, 0));
+
+            glm::mat4 M = bassGroup * local * orient * pressM;
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(M));
+
+            glDrawArrays(GL_TRIANGLES, 0, bassBtn_.vertexCount);
+        }
+
+        glBindVertexArray(0);
+    }
+    // ============================================================
+
+    // TREBLE dugmad (crno/belo kao ranije)
     glBindVertexArray(btn_.VAO);
 
-    for (int i = 0; i < N_; i++)
+    const int trebleCount = totalRows_ * cols_;
+    for (int i = 0; i < trebleCount; i++)
     {
         glm::mat4 local(1.0f);
         local = glm::translate(local, localPos_[i]);
