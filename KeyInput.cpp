@@ -45,6 +45,13 @@ namespace KeyInput
         {
             if (!pianoMode)
             {
+                for (int i = 0; i < 8; i++)
+                {
+                    Audio::ButtonSound bs{};
+                    bs.key = ctx.bassKeyBtn_dur[i];
+                    bs.filePath = ctx.bassFiles[8 + i]; // BAS_*_DUR
+                    audioButtons.push_back(bs);
+                }
                 // dugmetarski: osnovni(0..7) + dur(8..15)
                 for (int i = 0; i < 8; i++)
                 {
@@ -53,24 +60,18 @@ namespace KeyInput
                     bs.filePath = ctx.bassFiles[i]; // BAS_F..BAS_H
                     audioButtons.push_back(bs);
                 }
-                for (int i = 0; i < 8; i++)
-                {
-                    Audio::ButtonSound bs{};
-                    bs.key = ctx.bassKeyBtn_dur[i];
-                    bs.filePath = ctx.bassFiles[8 + i]; // BAS_*_DUR
-                    audioButtons.push_back(bs);
-                }
+                
             }
             else
             {
-                // klavirni: osnovni + dur + mol
                 for (int i = 0; i < 8; i++)
                 {
                     Audio::ButtonSound bs{};
-                    bs.key = ctx.bassKeyPiano_basic[i];
-                    bs.filePath = ctx.bassFiles[i];
+                    bs.key = ctx.bassKeyPiano_mol[i];
+                    bs.filePath = ctx.bassFiles[16 + i];
                     audioButtons.push_back(bs);
                 }
+                
                 for (int i = 0; i < 8; i++)
                 {
                     Audio::ButtonSound bs{};
@@ -78,11 +79,12 @@ namespace KeyInput
                     bs.filePath = ctx.bassFiles[8 + i];
                     audioButtons.push_back(bs);
                 }
+                // klavirni: osnovni + dur + mol
                 for (int i = 0; i < 8; i++)
                 {
                     Audio::ButtonSound bs{};
-                    bs.key = ctx.bassKeyPiano_mol[i];
-                    bs.filePath = ctx.bassFiles[16 + i];
+                    bs.key = ctx.bassKeyPiano_basic[i];
+                    bs.filePath = ctx.bassFiles[i];
                     audioButtons.push_back(bs);
                 }
             }

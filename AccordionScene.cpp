@@ -225,15 +225,37 @@ void AccordionScene::init(const TextureManager* textures)
     const float bStartX = -0.5f * (bassCols_ - 1) * bdx;
     const float bStartY = 0.5f * (bassRows_ - 1) * bdy;
 
+    // ============================================================
+    // BASOVI: 3 reda x 8 kolona, ali:
+    // redovi moraju biti: 0=OSNOVNI, 1=DUR, 2=MOL (osnovni najblizi desnoj strani)
+    // i raspored ide UKOSO (svaki sledeci red je malo pomeren po X)
+    const float rowSkewX = 0.06f;  // TUNING: koliko se red "pomera" u X po jednom koraku u r (ukoso)
+    const float colSkewY = 0.00f;  // TUNING: ako ikad hoces i kosinu po Y (za sad 0)
+
     // generisi 24 pozicije (3x8)
-    for (int r = 0; r < bassRows_; r++) {
-        for (int c = 0; c < bassCols_; c++) {
+    for (int r = 0; r < baseRows_; r++)
+    {
+        // rLogical: 0=OSNOVNI,1=DUR,2=MOL (tako i crtamo)
+        int rLogical = r;
+
+        // x pomeraj po redu da bude ukoso
+        float skewX = rLogical * rowSkewX;
+
+        for (int c = 0; c < bassCols_; c++)
+        {
             int i = r * bassCols_ + c;
-            bassLocalPos_[i] = glm::vec3(
-                bStartX + c * bdx,
-                bStartY - r * bdy,
-                0.0f
-            );
+
+            // osnovna pozicija
+            float x = bStartX + c * bdx;
+            float y = bStartY - rLogical * bdy;
+
+            // ukoso: pomeri X za ceo red
+            x += skewX;
+
+            // (opcioni) dodatni "twist" po kolonama, trenutno 0
+            y += c * colSkewY;
+
+            bassLocalPos_[i] = glm::vec3(x, y, 0.0f);
         }
     }
 }
