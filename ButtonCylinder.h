@@ -1,26 +1,23 @@
 // ButtonCylinder.h
-// Jednostavan generator "spljoštenog valjka" (dugmeta) za OpenGL 3.3
-// Format verteksa je kompatibilan sa tvojim shaderima:
-// layout(location=0) vec3 pos, location=1 vec4 col, location=2 vec2 tex
+// Generator "spljoštenog valjka" (dugmeta) spreman za Phong (pozicija + normala)
+// Kompatibilno sa tvojim phong shaderom:
+//   layout(location=0) vec3 inPos
+//   layout(location=1) vec3 inNor
 //
-// Koriscenje (primer):
-//   #include "ButtonCylinder.h"
-//   ButtonMesh btn = CreateButtonCylinder(0.08f, 0.03f, 32, {0.9f,0.9f,0.9f,1.0f});
-//   // u renderu: glBindVertexArray(btn.VAO); glDrawArrays(GL_TRIANGLES, 0, btn.vertexCount);
+// Koriscenje:
+//   ButtonMesh btn = CreateButtonCylinderPhong(0.08f, 0.03f, 32);
+//   // u renderu:
+//   glBindVertexArray(btn.VAO);
+//   glDrawArrays(GL_TRIANGLES, 0, btn.vertexCount);
 
 #pragma once
 #include <vector>
 #include <cmath>
 #include <GL/glew.h>
 
-struct BtnColor {
-    float r, g, b, a;
-};
-
-struct ButtonVertex {
-    float x, y, z;     // pos
-    float r, g, b, a;  // color
-    float s, t;        // tex
+struct ButtonVertexPhong {
+    float x, y, z;   // pos
+    float nx, ny, nz; // normal
 };
 
 struct ButtonMesh {
@@ -33,7 +30,7 @@ struct ButtonMesh {
 // radius - poluprecnik
 // height - debljina (po Y)
 // segments - broj segmenata (>= 3), npr. 24/32/48
-inline ButtonMesh CreateButtonCylinder(float radius, float height, int segments, BtnColor color)
+inline ButtonMesh CreateButtonCylinder(float radius, float height, int segments)
 {
     if (segments < 3) segments = 3;
 
@@ -41,11 +38,17 @@ inline ButtonMesh CreateButtonCylinder(float radius, float height, int segments,
     const float yBot = -height * 0.5f;
     const float PI = 3.14159265358979323846f;
 
-    std::vector<ButtonVertex> v;
+    std::vector<ButtonVertexPhong> v;
     v.reserve(segments * 12); // top(3) + bot(3) + side(6) po segmentu
 
-    auto push = [&](float x, float y, float z, float s, float t) {
-        v.push_back(ButtonVertex{ x, y, z, color.r, color.g, color.b, color.a, s, t });
+    auto push = [&](float x, float y, float z, float nx, float ny, float nz) {
+        v.push_back(ButtonVertexPhong{ x, y, z, nx, ny, nz });
+        };
+
+    auto normSide = [&](float x, float z) {
+        float len = std::sqrt(x * x + z * z);
+        if (len <= 1e-8f) return std::pair<float, float>(0.0f, 0.0f);
+        return std::pair<float, float>(x / len, z / len);
         };
 
     for (int i = 0; i < segments; i++)
@@ -58,31 +61,31 @@ inline ButtonMesh CreateButtonCylinder(float radius, float height, int segments,
         float x1 = std::cos(a1) * radius;
         float z1 = std::sin(a1) * radius;
 
-        // GORNJI DISK (triangulacija iz centra)
-        // Tex koordinate: mapiranje kruga u [0,1]x[0,1]
-        push(0.0f, yTop, 0.0f, 0.5f, 0.5f);
-        push(x0, yTop, z0, 0.5f + (x0 / (2.0f * radius)), 0.5f + (z0 / (2.0f * radius)));
-        push(x1, yTop, z1, 0.5f + (x1 / (2.0f * radius)), 0.5f + (z1 / (2.0f * radius)));
+        // --- TOP DISK (normal gore)
+        // winding: (center, p0, p1) gleda ka +Y
+        push(0.0f, yTop, 0.0f, 0.0f, +1.0f, 0.0f);
+        push(x0, yTop, z0, 0.0f, +1.0f, 0.0f);
+        push(x1, yTop, z1, 0.0f, +1.0f, 0.0f);
 
-        // DONJI DISK (obrnut winding da "spolja" gleda nadole)
-        push(0.0f, yBot, 0.0f, 0.5f, 0.5f);
-        push(x1, yBot, z1, 0.5f + (x1 / (2.0f * radius)), 0.5f + (z1 / (2.0f * radius)));
-        push(x0, yBot, z0, 0.5f + (x0 / (2.0f * radius)), 0.5f + (z0 / (2.0f * radius)));
+        // --- BOTTOM DISK (normal dole)
+        // winding obrnut da spolja gleda ka -Y
+        push(0.0f, yBot, 0.0f, 0.0f, -1.0f, 0.0f);
+        push(x1, yBot, z1, 0.0f, -1.0f, 0.0f);
+        push(x0, yBot, z0, 0.0f, -1.0f, 0.0f);
 
-        // OMOTAC (2 trougla)
-        // Tex: s ide oko valjka, t po visini
-        float s0 = (float)i / (float)segments;
-        float s1 = (float)(i + 1) / (float)segments;
+        // --- SIDE (radijalne normale)
+        auto n0 = normSide(x0, z0);
+        auto n1 = normSide(x1, z1);
 
         // trougao 1
-        push(x0, yTop, z0, s0, 1.0f);
-        push(x0, yBot, z0, s0, 0.0f);
-        push(x1, yBot, z1, s1, 0.0f);
+        push(x0, yTop, z0, n0.first, 0.0f, n0.second);
+        push(x0, yBot, z0, n0.first, 0.0f, n0.second);
+        push(x1, yBot, z1, n1.first, 0.0f, n1.second);
 
         // trougao 2
-        push(x0, yTop, z0, s0, 1.0f);
-        push(x1, yBot, z1, s1, 0.0f);
-        push(x1, yTop, z1, s1, 1.0f);
+        push(x0, yTop, z0, n0.first, 0.0f, n0.second);
+        push(x1, yBot, z1, n1.first, 0.0f, n1.second);
+        push(x1, yTop, z1, n1.first, 0.0f, n1.second);
     }
 
     ButtonMesh mesh{};
@@ -93,19 +96,15 @@ inline ButtonMesh CreateButtonCylinder(float radius, float height, int segments,
 
     glBindVertexArray(mesh.VAO);
     glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
-    glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(ButtonVertex), v.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(ButtonVertexPhong), v.data(), GL_STATIC_DRAW);
 
     // layout(location=0) in vec3 inPos;
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ButtonVertex), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ButtonVertexPhong), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // layout(location=1) in vec4 inCol;
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(ButtonVertex), (void*)(3 * sizeof(float)));
+    // layout(location=1) in vec3 inNor;
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(ButtonVertexPhong), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-
-    // layout(location=2) in vec2 inTex;
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(ButtonVertex), (void*)(7 * sizeof(float)));
-    glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);

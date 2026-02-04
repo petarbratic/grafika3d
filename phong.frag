@@ -26,7 +26,7 @@ void main()
 {
 	vec3 resA = uLight.kA * uMaterial.kA;
 
-	vec3 normal = normalize(-chNor);
+	vec3 normal = normalize(chNor);
 	vec3 lightDirection = normalize(uLight.pos - chFragPos);
 	float nD = max(dot(normal, lightDirection), 0.0);
 	vec3 resD = uLight.kD * ( nD * uMaterial.kD);

@@ -113,8 +113,7 @@ void AccordionScene::init(const TextureManager* textures)
     btn_ = CreateButtonCylinder(
         0.06f,
         0.1f,
-        32,
-        { 0.9f, 0.9f, 0.9f, 1.0f }
+        32
     );
 
     // ============================================================
@@ -122,8 +121,7 @@ void AccordionScene::init(const TextureManager* textures)
     bassBtn_ = CreateButtonCylinder(
         0.040f, // uze od treble
         0.085f, // malo nize
-        32,
-        { 1.0f, 1.0f, 1.0f, 1.0f }
+        32
     );
 
     // ============================================================
