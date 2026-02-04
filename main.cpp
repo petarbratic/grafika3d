@@ -45,7 +45,7 @@ int main()
     OverlayRenderer overlay;
     overlay.init("media/ime.png");
 
-    // Materijali (isto kao ranije)
+    // Materijali
     glm::vec3 body_kA(0.02f);
     glm::vec3 body_kD(0.05f);
     glm::vec3 body_kS(0.15f);
