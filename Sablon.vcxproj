@@ -155,6 +155,8 @@
   <ItemGroup>
     <None Include="basic.frag" />
     <None Include="basic.vert" />
+    <None Include="overlay.frag" />
+    <None Include="overlay.vert" />
     <None Include="packages.config" />
     <None Include="phong.frag" />
     <None Include="phong.vert" />

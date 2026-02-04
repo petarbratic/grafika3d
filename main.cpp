@@ -1,6 +1,9 @@
 ﻿// Autori: Nedeljko Tesanovic i Vasilije Markovic
 // Opis: Harmonika dugmetara – demo sa teksturama nota + Audio (irrKlang)
 
+#include <thread>
+#include <chrono>
+
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -30,13 +33,21 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(1000, 1000, "Harmonika dugmetara", nullptr, nullptr);
-    if (!window) {
-        glfwTerminate();
-        return 2;
-    }
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+    GLFWwindow* window = glfwCreateWindow(
+        mode->width,
+        mode->height,
+        "Harmonika dugmetara",
+        monitor,        
+        nullptr
+    );
 
     glfwMakeContextCurrent(window);
+
+    glfwSwapInterval(0); // iskljuci VSync
+
 
     if (glewInit() != GLEW_OK) {
         std::cout << "GLEW greska\n";
@@ -245,6 +256,9 @@ int main(void)
     glm::vec3 btn_kS(0.30f);
     float btn_shine = 96.0f;
 
+    const double TARGET_FPS = 75.0;
+    const double TARGET_FRAME_TIME = 1.0 / TARGET_FPS;
+
 
     // ------------------------------------------------------------
     while (!glfwWindowShouldClose(window))
@@ -271,6 +285,16 @@ int main(void)
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        double frameEnd = glfwGetTime();
+        double frameTime = frameEnd - now;
+
+        if (frameTime < TARGET_FRAME_TIME) {
+            double sleepTime = TARGET_FRAME_TIME - frameTime;
+            std::this_thread::sleep_for(
+                std::chrono::duration<double>(sleepTime)
+            );
+        }
     }
 
     // ------------------------------------------------------------
