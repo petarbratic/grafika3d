@@ -1,4 +1,7 @@
 ﻿// AccordionScene.cpp
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include "AccordionScene.h"
 #include "TextureManager.h"
 #include "Common.h"
@@ -7,8 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <cmath>
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+
 
 #include "LeftBodyBox.h"
 

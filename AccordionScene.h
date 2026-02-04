@@ -1,12 +1,12 @@
 ﻿#pragma once
 #include <vector>
+#include "GLCommon.h"
 #include <glm/glm.hpp>
 #include <GL/glew.h>
 #include "ButtonCylinder.h"
 #include "NoteData.h"
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+
 
 #include "RightBodyBox.h"
 #include "LeftBodyBox.h"

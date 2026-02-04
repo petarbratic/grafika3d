@@ -13,7 +13,7 @@
 #pragma once
 #include <vector>
 #include <cmath>
-#include <GL/glew.h>
+#include "GLCommon.h"
 
 struct ButtonVertexPhong {
     float x, y, z;   // pos

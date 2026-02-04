@@ -1,5 +1,5 @@
 #pragma once
-#include <GL/glew.h>
+#include "GLCommon.h"
 
 struct RightBodyBoxMesh {
     GLuint VAO = 0;

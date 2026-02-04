@@ -1,11 +1,11 @@
 // LeftBodyBox.cpp
 // Jednostavan box (bez dekle), auto normale, pos+normal+uv layout: (0 pos), (1 normal), (2 uv)
-
+#include <GL/glew.h>
 #include "LeftBodyBox.h"
 
 #include <vector>
 #include <glm/glm.hpp>
-#include <GL/glew.h>
+
 
 namespace
 {

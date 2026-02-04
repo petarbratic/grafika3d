@@ -1,6 +1,6 @@
 #pragma once
 #include <array>
-#include <GL/glew.h>
+#include "GLCommon.h"
 #include "NoteData.h"
 
 class TextureManager {

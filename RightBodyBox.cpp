@@ -4,13 +4,13 @@
 // Parametri za podesavanje su u sekciji TUNING.
 
 #include "RightBodyBox.h"
-
+#include <GL/glew.h>
 #include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <GL/glew.h>
+
 
 namespace
 {

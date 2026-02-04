@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <GLFW/glfw3.h>
+#include "GLCommon.h"
 
 // Zajednicko stanje programa (umesto gomile globalnih promenljivih)
 struct AppContext

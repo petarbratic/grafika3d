@@ -1,7 +1,7 @@
 // LeftBodyBox.h
 // Jednostavan box (bez dekle), sa normalama, kompatibilan sa Phong shaderom (pos+normal+uv).
 #pragma once
-#include <GL/glew.h>
+#include "GLCommon.h"
 
 struct LeftBodyBoxMesh
 {

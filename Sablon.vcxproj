@@ -144,10 +144,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AccordionScene.cpp" />
+    <ClCompile Include="AppSetup.cpp" />
     <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="GraphicsApp.cpp" />
+    <ClCompile Include="InputToggles.cpp" />
     <ClCompile Include="KeyInput.cpp" />
     <ClCompile Include="LeftBodyBox.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="OverlayRenderer.cpp" />
+    <ClCompile Include="PhongPipeline.cpp" />
     <ClCompile Include="RightBodyBox.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Util.cpp" />
@@ -164,12 +169,18 @@
   <ItemGroup>
     <ClInclude Include="AccordionScene.h" />
     <ClInclude Include="AppContext.h" />
+    <ClInclude Include="AppSetup.h" />
     <ClInclude Include="Audio.h" />
     <ClInclude Include="ButtonCylinder.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="GLCommon.h" />
+    <ClInclude Include="GraphicsApp.h" />
+    <ClInclude Include="InputToggles.h" />
     <ClInclude Include="KeyInput.h" />
     <ClInclude Include="LeftBodyBox.h" />
     <ClInclude Include="NoteData.h" />
+    <ClInclude Include="OverlayRenderer.h" />
+    <ClInclude Include="PhongPipeline.h" />
     <ClInclude Include="RightBodyBox.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="TextureManager.h" />
