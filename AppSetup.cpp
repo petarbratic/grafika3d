@@ -38,51 +38,51 @@ namespace AppSetup
         };
 
         // DUGMETARSKI: osnovni + dur
-        ctx.bassKeyBtn_basic[0] = GLFW_KEY_8;
-        ctx.bassKeyBtn_basic[1] = GLFW_KEY_9;
-        ctx.bassKeyBtn_basic[2] = GLFW_KEY_7;
-        ctx.bassKeyBtn_basic[3] = GLFW_KEY_6;
-        ctx.bassKeyBtn_basic[4] = GLFW_KEY_5;
-        ctx.bassKeyBtn_basic[5] = GLFW_KEY_4;
-        ctx.bassKeyBtn_basic[6] = GLFW_KEY_3;
-        ctx.bassKeyBtn_basic[7] = GLFW_KEY_2;
+        ctx.bassKeyBtn_basic[0] = GLFW_KEY_2;
+        ctx.bassKeyBtn_basic[1] = GLFW_KEY_3;
+        ctx.bassKeyBtn_basic[2] = GLFW_KEY_4;
+        ctx.bassKeyBtn_basic[3] = GLFW_KEY_5;
+        ctx.bassKeyBtn_basic[4] = GLFW_KEY_6;
+        ctx.bassKeyBtn_basic[5] = GLFW_KEY_7;
+        ctx.bassKeyBtn_basic[6] = GLFW_KEY_8;
+        ctx.bassKeyBtn_basic[7] = GLFW_KEY_9;
 
-        ctx.bassKeyBtn_dur[0] = GLFW_KEY_F8;
-        ctx.bassKeyBtn_dur[1] = GLFW_KEY_F9;
-        ctx.bassKeyBtn_dur[2] = GLFW_KEY_F7;
-        ctx.bassKeyBtn_dur[3] = GLFW_KEY_F6;
-        ctx.bassKeyBtn_dur[4] = GLFW_KEY_F5;
-        ctx.bassKeyBtn_dur[5] = GLFW_KEY_F4;
-        ctx.bassKeyBtn_dur[6] = GLFW_KEY_F3;
-        ctx.bassKeyBtn_dur[7] = GLFW_KEY_F2;
+        ctx.bassKeyBtn_dur[0] = GLFW_KEY_F2;
+        ctx.bassKeyBtn_dur[1] = GLFW_KEY_F3;
+        ctx.bassKeyBtn_dur[2] = GLFW_KEY_F4;
+        ctx.bassKeyBtn_dur[3] = GLFW_KEY_F5;
+        ctx.bassKeyBtn_dur[4] = GLFW_KEY_F6;
+        ctx.bassKeyBtn_dur[5] = GLFW_KEY_F7;
+        ctx.bassKeyBtn_dur[6] = GLFW_KEY_F8;
+        ctx.bassKeyBtn_dur[7] = GLFW_KEY_F9;
 
         // KLAVIRNI: osnovni + dur + mol
-        ctx.bassKeyPiano_basic[0] = GLFW_KEY_I;
-        ctx.bassKeyPiano_basic[1] = GLFW_KEY_O;
-        ctx.bassKeyPiano_basic[2] = GLFW_KEY_U;
-        ctx.bassKeyPiano_basic[3] = GLFW_KEY_Y;
-        ctx.bassKeyPiano_basic[4] = GLFW_KEY_T;
-        ctx.bassKeyPiano_basic[5] = GLFW_KEY_R;
-        ctx.bassKeyPiano_basic[6] = GLFW_KEY_E;
-        ctx.bassKeyPiano_basic[7] = GLFW_KEY_W;
+        ctx.bassKeyPiano_basic[0] = GLFW_KEY_W;
+        ctx.bassKeyPiano_basic[1] = GLFW_KEY_E;
+        ctx.bassKeyPiano_basic[2] = GLFW_KEY_R;
+        ctx.bassKeyPiano_basic[3] = GLFW_KEY_T;
+        ctx.bassKeyPiano_basic[4] = GLFW_KEY_Y;
+        ctx.bassKeyPiano_basic[5] = GLFW_KEY_U;
+        ctx.bassKeyPiano_basic[6] = GLFW_KEY_I;
+        ctx.bassKeyPiano_basic[7] = GLFW_KEY_O;
 
-        ctx.bassKeyPiano_dur[0] = GLFW_KEY_8;
-        ctx.bassKeyPiano_dur[1] = GLFW_KEY_9;
-        ctx.bassKeyPiano_dur[2] = GLFW_KEY_7;
-        ctx.bassKeyPiano_dur[3] = GLFW_KEY_6;
-        ctx.bassKeyPiano_dur[4] = GLFW_KEY_5;
-        ctx.bassKeyPiano_dur[5] = GLFW_KEY_4;
-        ctx.bassKeyPiano_dur[6] = GLFW_KEY_3;
-        ctx.bassKeyPiano_dur[7] = GLFW_KEY_2;
+        ctx.bassKeyPiano_dur[0] = GLFW_KEY_2;
+        ctx.bassKeyPiano_dur[1] = GLFW_KEY_3;
+        ctx.bassKeyPiano_dur[2] = GLFW_KEY_4;
+        ctx.bassKeyPiano_dur[3] = GLFW_KEY_5;
+        ctx.bassKeyPiano_dur[4] = GLFW_KEY_6;
+        ctx.bassKeyPiano_dur[5] = GLFW_KEY_7;
+        ctx.bassKeyPiano_dur[6] = GLFW_KEY_8;
+        ctx.bassKeyPiano_dur[7] = GLFW_KEY_9;
 
-        ctx.bassKeyPiano_mol[0] = GLFW_KEY_F8;
-        ctx.bassKeyPiano_mol[1] = GLFW_KEY_F9;
-        ctx.bassKeyPiano_mol[2] = GLFW_KEY_F7;
-        ctx.bassKeyPiano_mol[3] = GLFW_KEY_F6;
-        ctx.bassKeyPiano_mol[4] = GLFW_KEY_F5;
-        ctx.bassKeyPiano_mol[5] = GLFW_KEY_F4;
-        ctx.bassKeyPiano_mol[6] = GLFW_KEY_F3;
-        ctx.bassKeyPiano_mol[7] = GLFW_KEY_F2;
+        ctx.bassKeyPiano_mol[0] = GLFW_KEY_F2;
+        ctx.bassKeyPiano_mol[1] = GLFW_KEY_F3;
+        ctx.bassKeyPiano_mol[2] = GLFW_KEY_F4;
+        ctx.bassKeyPiano_mol[3] = GLFW_KEY_F5;
+        ctx.bassKeyPiano_mol[4] = GLFW_KEY_F6;
+        ctx.bassKeyPiano_mol[5] = GLFW_KEY_F7;
+        ctx.bassKeyPiano_mol[6] = GLFW_KEY_F8;
+        ctx.bassKeyPiano_mol[7] = GLFW_KEY_F9;
 
         ctx.baseRows = scene.baseRows();
         ctx.cols = scene.cols();
