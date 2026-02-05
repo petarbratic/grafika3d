@@ -146,6 +146,7 @@
     <ClCompile Include="AccordionScene.cpp" />
     <ClCompile Include="AppSetup.cpp" />
     <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="ButtonCylinder.cpp" />
     <ClCompile Include="GraphicsApp.cpp" />
     <ClCompile Include="InputToggles.cpp" />
     <ClCompile Include="KeyInput.cpp" />
