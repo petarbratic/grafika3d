@@ -1,6 +1,5 @@
 ﻿// AccordionScene.cpp
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "GLCommon.h"
 
 #include "AccordionScene.h"
 #include "TextureManager.h"
@@ -10,13 +9,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <cmath>
 
-
-
 #include "LeftBodyBox.h"
 
 namespace
 {
-    // Helper: cache uniform loc once per program
     struct UniformCacheBasic {
         GLuint program = 0;
         GLint useTex = -1;
@@ -75,7 +71,6 @@ namespace
         if (u.kS != -1) glUniform3f(u.kS, kS.x, kS.y, kS.z);
     }
 
-    // Crne note: sve sa # + Bb (flat) iz tvog enum-a
     static inline bool isBlackNote(NoteId n)
     {
         switch (n)
@@ -95,167 +90,190 @@ namespace
         case FSHARP2:
         case GSHARP2:
             return true;
-
         default:
             return false;
         }
     }
 
+    static inline float smoothTo(float current, float target, float inSpeed, float outSpeed, float dt)
+    {
+        float speed = (target > current) ? inSpeed : outSpeed;
+        float next = current + (target - current) * (1.0f - std::exp(-speed * dt));
+        return clampf(next, 0.0f, 1.0f);
+    }
+
+    static inline glm::mat4 buildButtonM(const glm::mat4& group,
+        const glm::vec3& pos,
+        float press,
+        float pressDepth)
+    {
+        glm::mat4 local(1.0f);
+        local = glm::translate(local, pos);
+
+        glm::mat4 orient(1.0f);
+        orient = glm::rotate(orient, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+
+        glm::mat4 pressM(1.0f);
+        pressM = glm::translate(pressM, glm::vec3(0, pressDepth * press, 0));
+
+        return group * local * orient * pressM;
+    }
+
+    static inline void getTrebleMaterial(NoteId n, float press,
+        glm::vec3& kA, glm::vec3& kD, glm::vec3& kS)
+    {
+        if (isBlackNote(n))
+        {
+            kA = glm::vec3(0.25f);
+            kD = glm::vec3(0.25f);
+            kS = glm::vec3(0.25f);
+        }
+        else
+        {
+            kA = glm::vec3(0.10f);
+            kD = glm::vec3(0.85f);
+            kS = glm::vec3(0.35f);
+        }
+
+        float pressDark = 1.0f - 0.20f * press;
+        kD *= pressDark;
+    }
+
+    static inline void getBassMaterial(float press,
+        glm::vec3& kA, glm::vec3& kD, glm::vec3& kS)
+    {
+        kA = glm::vec3(0.10f);
+        kD = glm::vec3(0.90f);
+        kS = glm::vec3(0.25f);
+
+        float pressDark = 1.0f - 0.25f * press;
+        kD *= pressDark;
+    }
+
+    static inline glm::mat4 buildBassGroup(const glm::mat4& accM,
+        const glm::vec3& offset,
+        float rotY,
+        float rotX)
+    {
+        glm::mat4 g = accM;
+        g = g * glm::translate(glm::mat4(1.0f), offset);
+        if (rotY != 0.0f) g = g * glm::rotate(glm::mat4(1.0f), rotY, glm::vec3(0, 1, 0));
+        if (rotX != 0.0f) g = g * glm::rotate(glm::mat4(1.0f), rotX, glm::vec3(1, 0, 0));
+        return g;
+    }
 } // namespace
 
 void AccordionScene::init(const TextureManager* textures)
 {
     textures_ = textures;
 
-    // layout 1:1
     getRightHandLayout(layout_);
 
-    // ============================================================
-    // TREBLE dugme mesh
-    btn_ = CreateButtonCylinder(
-        0.06f,
-        0.1f,
-        32
-    );
+    btn_ = CreateButtonCylinder(0.06f, 0.1f, 32);
+    bassBtn_ = CreateButtonCylinder(0.040f, 0.085f, 32);
 
-    // ============================================================
-    // BAS dugme mesh (uzi i beli)
-    bassBtn_ = CreateButtonCylinder(
-        0.040f, // uze od treble
-        0.085f, // malo nize
-        32
-    );
+    N_ = totalRows_ * cols_;
+    baseN_ = baseRows_ * cols_;
 
-    // ============================================================
-    // Treble counts
-    N_ = totalRows_ * cols_;   // 60
-    baseN_ = baseRows_ * cols_;// 30
+    bassN_ = bassRows_ * bassCols_;
+    bassStartIndex_ = N_;
+    N_ = N_ + bassN_;
 
-    // Bas counts
-    bassN_ = bassRows_ * bassCols_;     // 24
-    bassStartIndex_ = N_;               // bass ide posle 60 u pressTarget
-    N_ = N_ + bassN_;                   // ukupno 84 (treble 60 + bas 24)
-
-    // storage
-    localPos_.assign(totalRows_ * cols_, glm::vec3(0)); // samo treble 60
-    press_.assign(totalRows_ * cols_, 0.0f);            // samo treble 60
+    localPos_.assign(totalRows_ * cols_, glm::vec3(0));
+    press_.assign(totalRows_ * cols_, 0.0f);
 
     bassLocalPos_.assign(bassN_, glm::vec3(0));
     bassPress_.assign(bassN_, 0.0f);
 
-    // ============================================================
-    // pozicije treble dugmadi 1:1
-    float dx = 0.16f;
-    float dy = 0.14f;
+    {
+        const float dx = 0.16f;
+        const float dy = 0.14f;
 
-    float startX = -0.5f * (cols_ - 1) * dx;
-    float startY = 0.5f * (baseRows_ - 1) * dy;
+        const float startX = -0.5f * (cols_ - 1) * dx;
+        const float startY = 0.5f * (baseRows_ - 1) * dy;
 
-    float rowOffset[3] = { 0.0f, 0.08f, 0.0f };
+        const float rowOffset[3] = { 0.0f, 0.08f, 0.0f };
 
-    float cloneGap = 0.25f;
-    float cloneBaseOffsetX = cols_ * dx + cloneGap;
+        const float cloneGap = 0.25f;
+        const float cloneBaseOffsetX = cols_ * dx + cloneGap;
 
-    float cloneTuneX = -1.85f;
-    float cloneTuneY = +0.43f;
-    float cloneTuneZ = 0.00f;
+        const float cloneTuneX = -1.85f;
+        const float cloneTuneY = +0.43f;
+        const float cloneTuneZ = 0.00f;
 
-    float cloneOffsetX = cloneBaseOffsetX + cloneTuneX;
-    float cloneOffsetY = cloneTuneY;
-    float cloneOffsetZ = cloneTuneZ;
+        const float cloneOffsetX = cloneBaseOffsetX + cloneTuneX;
+        const float cloneOffsetY = cloneTuneY;
+        const float cloneOffsetZ = cloneTuneZ;
 
-    for (int r = 0; r < totalRows_; r++) {
-        int baseR = r % baseRows_;
+        for (int r = 0; r < totalRows_; r++) {
+            const int baseR = r % baseRows_;
 
-        float blockX = 0.0f;
-        float blockY = 0.0f;
-        float blockZ = 0.0f;
+            float blockX = 0.0f;
+            float blockY = 0.0f;
+            float blockZ = 0.0f;
 
-        if (r >= baseRows_) {
-            blockX = cloneOffsetX;
-            blockY = cloneOffsetY;
-            blockZ = cloneOffsetZ;
-        }
+            if (r >= baseRows_) {
+                blockX = cloneOffsetX;
+                blockY = cloneOffsetY;
+                blockZ = cloneOffsetZ;
+            }
 
-        for (int c = 0; c < cols_; c++) {
-            int i = r * cols_ + c;
-            localPos_[i] = glm::vec3(
-                (startX + c * dx + rowOffset[baseR]) + blockX,
-                (startY - baseR * dy) + blockY,
-                0.0f + blockZ
-            );
+            for (int c = 0; c < cols_; c++) {
+                const int i = r * cols_ + c;
+                localPos_[i] = glm::vec3(
+                    (startX + c * dx + rowOffset[baseR]) + blockX,
+                    (startY - baseR * dy) + blockY,
+                    0.0f + blockZ
+                );
+            }
         }
     }
 
-    // ============================================================
-    // KORPUS (desno)
     RightBody_ = CreateRightBodyBox(0.95f, 0.55f, 0.03f);
 
-    // ============================================================
-    // LEVA KUTIJA (tvoje postojece)
-    const float left_dx = 0.95f;
-    const float left_dy = 0.3f;
-    const float left_dz = 0.24f + 0.01f;
+    {
+        const float left_dx = 0.95f;
+        const float left_dy = 0.3f;
+        const float left_dz = 0.24f + 0.01f;
 
-    leftBodyOffset_ = glm::vec3(0.047f, 1.30f, 0.148f);
-    leftBodyRotY_ = 0.0f;
-    leftBodyRotX_ = 0.0f;
+        leftBodyOffset_ = glm::vec3(0.047f, 1.30f, 0.148f);
+        leftBodyRotY_ = 0.0f;
+        leftBodyRotX_ = 0.0f;
 
-    LeftBody_ = CreateLeftBodyBox(left_dx, left_dy, left_dz);
+        LeftBody_ = CreateLeftBodyBox(left_dx, left_dy, left_dz);
+    }
 
-    // ============================================================
-    // TUNING: BASOVI (menjaj samo ovde)
-    //
-    // Raspored 3 reda (osnovni/dur/mol) × 8 kolona (F B C G D A E H).
-    // Ovo je samo geometrija, audio/mapiranje dodajemo posle.
-    //
-    // bassOffset_ je GLAVNI "pomeri sve basove" parametar.
-    // Preporuka: kreni od ovoga i samo ga doteruj dok ne legne.
     bassOffset_ = glm::vec3(0.12f, 1.18f, 0.4f);
-
-    // Opciona dodatna rotacija bas grupe (ako zatreba)
     bassRotY_ = 0.0f;
     bassRotX_ = 0.0f;
 
-    // razmaci basova (tuning)
-    const float bdx = 0.11f; // razmak kolona
-    const float bdy = 0.12f; // razmak redova
-
-    // start u okviru bas grupe (tuning)
-    const float bStartX = -0.5f * (bassCols_ - 1) * bdx;
-    const float bStartY = 0.5f * (bassRows_ - 1) * bdy;
-
-    // ============================================================
-    // BASOVI: 3 reda x 8 kolona, ali:
-    // redovi moraju biti: 0=OSNOVNI, 1=DUR, 2=MOL (osnovni najblizi desnoj strani)
-    // i raspored ide UKOSO (svaki sledeci red je malo pomeren po X)
-    const float rowSkewX = 0.06f;  // TUNING: koliko se red "pomera" u X po jednom koraku u r (ukoso)
-    const float colSkewY = 0.00f;  // TUNING: ako ikad hoces i kosinu po Y (za sad 0)
-
-    // generisi 24 pozicije (3x8)
-    for (int r = 0; r < baseRows_; r++)
     {
-        // rLogical: 0=OSNOVNI,1=DUR,2=MOL (tako i crtamo)
-        int rLogical = r;
+        const float bdx = 0.11f;
+        const float bdy = 0.12f;
 
-        // x pomeraj po redu da bude ukoso
-        float skewX = rLogical * rowSkewX;
+        const float bStartX = -0.5f * (bassCols_ - 1) * bdx;
+        const float bStartY = 0.5f * (bassRows_ - 1) * bdy;
 
-        for (int c = 0; c < bassCols_; c++)
+        const float rowSkewX = 0.06f;
+        const float colSkewY = 0.00f;
+
+        for (int r = 0; r < bassRows_; r++)
         {
-            int i = r * bassCols_ + c;
+            const int rLogical = r;
+            const float skewX = rLogical * rowSkewX;
 
-            // osnovna pozicija
-            float x = bStartX + c * bdx;
-            float y = bStartY - rLogical * bdy;
+            for (int c = 0; c < bassCols_; c++)
+            {
+                const int i = r * bassCols_ + c;
 
-            // ukoso: pomeri X za ceo red
-            x += skewX;
+                float x = bStartX + c * bdx;
+                float y = bStartY - rLogical * bdy;
 
-            // (opcioni) dodatni "twist" po kolonama, trenutno 0
-            y += c * colSkewY;
+                x += skewX;
+                y += c * colSkewY;
 
-            bassLocalPos_[i] = glm::vec3(x, y, 0.0f);
+                bassLocalPos_[i] = glm::vec3(x, y, 0.0f);
+            }
         }
     }
 }
@@ -275,40 +293,30 @@ void AccordionScene::updateRotationFromKeys(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)    accRotX_ += 0.03f;
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)  accRotX_ -= 0.03f;
 
-    // ------------------------------------------------------------
-    // POMERANJE CELE HARMONIKE (TUNING)
     const float moveStep = 0.03f;
 
-    // Q/W: gore/dole po Y osi
     if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) accPos_.y += moveStep;
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) accPos_.y -= moveStep;
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)  accPos_.y -= moveStep;
 
-    // 1/2: levo/desno po X osi
     if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) accPos_.x -= moveStep;
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) accPos_.x += moveStep;
 }
 
 void AccordionScene::updatePress(float dt, const std::vector<float>& pressTarget)
 {
-    float pressInSpeed = 10.0f;
-    float pressOutSpeed = 14.0f;
+    const float pressInSpeed = 10.0f;
+    const float pressOutSpeed = 14.0f;
 
-    // treble (60)
     const int trebleCount = totalRows_ * cols_;
     for (int i = 0; i < trebleCount; i++) {
         float target = (i < (int)pressTarget.size()) ? pressTarget[i] : 0.0f;
-        float speed = (target > press_[i]) ? pressInSpeed : pressOutSpeed;
-        press_[i] = press_[i] + (target - press_[i]) * (1.0f - std::exp(-speed * dt));
-        press_[i] = clampf(press_[i], 0.0f, 1.0f);
+        press_[i] = smoothTo(press_[i], target, pressInSpeed, pressOutSpeed, dt);
     }
 
-    // bass (24) -> pressTarget indeks: bassStartIndex_ + i
     for (int i = 0; i < bassN_; i++) {
         int idx = bassStartIndex_ + i;
         float target = (idx >= 0 && idx < (int)pressTarget.size()) ? pressTarget[idx] : 0.0f;
-        float speed = (target > bassPress_[i]) ? pressInSpeed : pressOutSpeed;
-        bassPress_[i] = bassPress_[i] + (target - bassPress_[i]) * (1.0f - std::exp(-speed * dt));
-        bassPress_[i] = clampf(bassPress_[i], 0.0f, 1.0f);
+        bassPress_[i] = smoothTo(bassPress_[i], target, pressInSpeed, pressOutSpeed, dt);
     }
 }
 
@@ -319,7 +327,6 @@ void AccordionScene::render(GLuint shader, GLint modelLoc)
 
     const glm::mat4 accM = buildAccM(accPos_, accRotY_, accRotX_);
 
-    // KORPUS: depth-only
     if (RightBody_.VAO != 0 && RightBody_.vertexCount > 0)
     {
         glm::mat4 bodyM = accM;
@@ -336,22 +343,13 @@ void AccordionScene::render(GLuint shader, GLint modelLoc)
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     }
 
-    // TREBLE: teksture
     glBindVertexArray(btn_.VAO);
 
     const int trebleCount = totalRows_ * cols_;
     for (int i = 0; i < trebleCount; i++)
     {
-        glm::mat4 local(1.0f);
-        local = glm::translate(local, localPos_[i]);
-
-        glm::mat4 orient(1.0f);
-        orient = glm::rotate(orient, glm::radians(-90.0f), glm::vec3(1, 0, 0));
-
-        glm::mat4 pressM(1.0f);
-        pressM = glm::translate(pressM, glm::vec3(0, pressDepth_ * press_[i], 0));
-
-        glm::mat4 M = accM * local * orient * pressM;
+        glm::mat4 group = accM;
+        glm::mat4 M = buildButtonM(group, localPos_[i], press_[i], pressDepth_);
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(M));
 
         int r = i / cols_;
@@ -381,7 +379,6 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
 
     const glm::mat4 accM = buildAccM(accPos_, accRotY_, accRotX_);
 
-    // DESNI KORPUS
     if (RightBody_.VAO != 0 && RightBody_.vertexCount > 0)
     {
         setPhongMaterial(up, body_shine, body_kA, body_kD, body_kS);
@@ -395,7 +392,6 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
         glBindVertexArray(0);
     }
 
-    // LEVA KUTIJA
     if (LeftBody_.VAO != 0 && LeftBody_.vertexCount > 0)
     {
         const glm::vec3 left_kA(0.02f);
@@ -417,42 +413,21 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
         glBindVertexArray(0);
     }
 
-    // ============================================================
-    // BAS DUGMAD (24): beli, uzi cilindri, 3 reda x 8
     if (bassBtn_.VAO != 0 && bassBtn_.vertexCount > 0)
     {
-        // beli materijal
-        glm::vec3 b_kA(0.10f);
-        glm::vec3 b_kD(0.90f);
-        glm::vec3 b_kS(0.25f);
-        float b_shine = 96.0f;
+        const float b_shine = 96.0f;
+
+        const glm::mat4 bassGroup = buildBassGroup(accM, bassOffset_, bassRotY_, bassRotX_);
 
         glBindVertexArray(bassBtn_.VAO);
 
         for (int i = 0; i < bassN_; i++)
         {
-            // press malo potamni i udubi
-            float pressDark = 1.0f - 0.25f * bassPress_[i];
-            glm::vec3 kD = b_kD * pressDark;
+            glm::vec3 kA, kD, kS;
+            getBassMaterial(bassPress_[i], kA, kD, kS);
+            setPhongMaterial(up, b_shine, kA, kD, kS);
 
-            setPhongMaterial(up, b_shine, b_kA, kD, b_kS);
-
-            glm::mat4 local(1.0f);
-            local = glm::translate(local, bassLocalPos_[i]);
-
-            glm::mat4 orient(1.0f);
-            orient = glm::rotate(orient, glm::radians(-90.0f), glm::vec3(1, 0, 0));
-
-            glm::mat4 pressM(1.0f);
-            pressM = glm::translate(pressM, glm::vec3(0, pressDepth_ * bassPress_[i], 0));
-
-            // grupni transform basova (TUNING)
-            glm::mat4 bassGroup = accM;
-            bassGroup = bassGroup * glm::translate(glm::mat4(1.0f), bassOffset_);
-            if (bassRotY_ != 0.0f) bassGroup = bassGroup * glm::rotate(glm::mat4(1.0f), bassRotY_, glm::vec3(0, 1, 0));
-            if (bassRotX_ != 0.0f) bassGroup = bassGroup * glm::rotate(glm::mat4(1.0f), bassRotX_, glm::vec3(1, 0, 0));
-
-            glm::mat4 M = bassGroup * local * orient * pressM;
+            glm::mat4 M = buildButtonM(bassGroup, bassLocalPos_[i], bassPress_[i], pressDepth_);
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(M));
 
             glDrawArrays(GL_TRIANGLES, 0, bassBtn_.vertexCount);
@@ -460,24 +435,13 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
 
         glBindVertexArray(0);
     }
-    // ============================================================
 
-    // TREBLE dugmad (crno/belo kao ranije)
     glBindVertexArray(btn_.VAO);
 
     const int trebleCount = totalRows_ * cols_;
     for (int i = 0; i < trebleCount; i++)
     {
-        glm::mat4 local(1.0f);
-        local = glm::translate(local, localPos_[i]);
-
-        glm::mat4 orient(1.0f);
-        orient = glm::rotate(orient, glm::radians(-90.0f), glm::vec3(1, 0, 0));
-
-        glm::mat4 pressM(1.0f);
-        pressM = glm::translate(pressM, glm::vec3(0, pressDepth_ * press_[i], 0));
-
-        glm::mat4 M = accM * local * orient * pressM;
+        glm::mat4 M = buildButtonM(accM, localPos_[i], press_[i], pressDepth_);
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(M));
 
         int r = i / cols_;
@@ -485,19 +449,8 @@ void AccordionScene::renderPhong(GLuint phongShader, GLint modelLoc,
         int baseR = r % baseRows_;
         NoteId n = layout_[baseR][c];
 
-        glm::vec3 kA(0.10f);
-        glm::vec3 kD(0.85f);
-        glm::vec3 kS(0.35f);
-
-        if (isBlackNote(n))
-        {
-            kA = glm::vec3(0.25f);
-            kD = glm::vec3(0.25f);
-            kS = glm::vec3(0.25f);
-        }
-
-        float pressDark = 1.0f - 0.20f * press_[i];
-        kD *= pressDark;
+        glm::vec3 kA, kD, kS;
+        getTrebleMaterial(n, press_[i], kA, kD, kS);
 
         setPhongMaterial(up, btn_shine, kA, kD, kS);
 

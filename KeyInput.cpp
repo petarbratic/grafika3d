@@ -57,7 +57,7 @@ namespace KeyInput
                 {
                     Audio::ButtonSound bs{};
                     bs.key = ctx.bassKeyBtn_basic[i];
-                    bs.filePath = ctx.bassFiles[i]; // BAS_F..BAS_H
+                    bs.filePath = ctx.bassFiles[i]; // BAS_B..BAS_H
                     audioButtons.push_back(bs);
                 }
                 

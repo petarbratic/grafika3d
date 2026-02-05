@@ -21,10 +21,10 @@ namespace AppSetup
 
     void setupContextAndScene(AppContext& ctx, AccordionScene& scene, GLFWwindow* window)
     {
-        // Scena (bez tekstura nota, kao kod tebe)
+        // Scena
         scene.init(nullptr);
 
-        // Key mapping (tvoje mape)
+        // Key mapping 
         static int keyMap[3][10] = {
             { GLFW_KEY_Q, GLFW_KEY_W, GLFW_KEY_E, GLFW_KEY_R, GLFW_KEY_T, GLFW_KEY_Y, GLFW_KEY_U, GLFW_KEY_I, GLFW_KEY_O, GLFW_KEY_P },
             { GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_F, GLFW_KEY_G, GLFW_KEY_H, GLFW_KEY_J, GLFW_KEY_K, GLFW_KEY_L, GLFW_KEY_SEMICOLON },

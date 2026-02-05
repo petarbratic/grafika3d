@@ -24,7 +24,7 @@ struct AppContext
     int (*keyMapPiano)[10] = nullptr;
 
     // --- bass (leva ruka) ---
-    // 8*3 = 24 fajla (osnovni, dur, mol) redom f b c g d a e h
+    // 8*3 = 24 fajla (osnovni, dur, mol) redom b f c g d a e h
     std::vector<const char*> bassFiles; // size 24
 
     // key mape za basove:
