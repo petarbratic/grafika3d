@@ -152,6 +152,7 @@
     <ClCompile Include="KeyInput.cpp" />
     <ClCompile Include="LeftBodyBox.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="NoteData.cpp" />
     <ClCompile Include="OverlayRenderer.cpp" />
     <ClCompile Include="PhongPipeline.cpp" />
     <ClCompile Include="RightBodyBox.cpp" />
