@@ -2,7 +2,6 @@
 #include "GLCommon.h"
 
 #include "AccordionScene.h"
-#include "TextureManager.h"
 #include "Common.h"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -357,7 +356,7 @@ void AccordionScene::render(GLuint shader, GLint modelLoc)
         int baseR = r % baseRows_;
         NoteId n = layout_[baseR][c];
 
-        glBindTexture(GL_TEXTURE_2D, textures_->tex(n));
+        
 
         if (ub.useTex != -1) glUniform1i(ub.useTex, 1);
         if (ub.transparent != -1) glUniform1i(ub.transparent, 1);

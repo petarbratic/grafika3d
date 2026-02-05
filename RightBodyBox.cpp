@@ -1,7 +1,5 @@
 ﻿// RightBodyBox.cpp
-// Korpus desne strane + "dekla" (drugi kvadar) sa kosinom (chamfer) na cosku.
-// Sve je "copypaste-ready".
-// Parametri za podesavanje su u sekciji TUNING.
+// Korpus desne strane + "dekla" (drugi kvadar).
 
 #include "RightBodyBox.h"
 #include <GL/glew.h>

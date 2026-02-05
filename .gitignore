@@ -24,3 +24,6 @@ cmake-build-*/
 # OS
 Thumbs.db
 .DS_Store
+
+# NuGet packages (C++ / Visual Studio)
+packages/
