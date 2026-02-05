@@ -356,8 +356,6 @@ void AccordionScene::render(GLuint shader, GLint modelLoc)
         int baseR = r % baseRows_;
         NoteId n = layout_[baseR][c];
 
-        
-
         if (ub.useTex != -1) glUniform1i(ub.useTex, 1);
         if (ub.transparent != -1) glUniform1i(ub.transparent, 1);
 

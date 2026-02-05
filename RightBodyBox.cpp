@@ -16,7 +16,7 @@ namespace
     {
         float px, py, pz; // position
         float nx, ny, nz; // normal
-        float u, v;       // uv (nebitno, ali ostavljeno)
+        float u, v;       // uv 
     };
 
     static glm::vec3 faceNormal(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c)
@@ -86,7 +86,7 @@ RightBodyBoxMesh CreateRightBodyBox(float sx, float sy, float sz)
     float x = sx, y = sy, z = sz;
 
     // ============================================================
-    // TUNING PARAMETRI (MENJAJ OVO)
+    // TUNING PARAMETRI
 
     // --- DEKLA (drugi kvadar) dimenzije ---
     float dx = 0.95f; // polu-sirina  (X)
